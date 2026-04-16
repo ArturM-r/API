@@ -1,100 +1,93 @@
 # API (Go Backend)
 
-Backend-сервис на Go с авторизацией, CRUD API, Redis-кэшем и PostgreSQL.
+Backend-сервис на Go с авторизацией, CRUD API и кэшированием через Redis.  
+Проект сделан как pet-project с упором на архитектуру (handlers → service → repository) и практики, используемые в реальной разработке.
 
-## Стек
+## Stack
 
 - Go (Gin)
 - PostgreSQL
 - Redis
-- JWT авторизация
+- JWT (auth)
 - Docker / Docker Compose
 
-## Функционал
+## Features
 
-- Регистрация и логин пользователей
-- JWT авторизация
-- CRUD для API (todo-подобные сущности)
-- Кэширование через Redis
-- Миграции базы данных
+- регистрация и логин пользователей
+- JWT авторизация (middleware)
+- CRUD API
+- фильтрация + пагинация
+- Redis кэш для GET запросов
+- инвалидция кэша при изменениях
+- миграции базы данных
 
-## Структура проекта
+## Project structure
 
-cmd/                # точка входа (main)
+cmd/                # entry point (main)
 internal/
-  user/             # логика пользователей (auth, service, repo)
-  APIs/             # основное API (handlers, service, repo)
+  user/             # auth + user logic
+  APIs/             # основной API (handlers/service/repo)
   jwt/              # middleware авторизации
   errs/             # кастомные ошибки
 migrations/         # SQL миграции
 Dockerfile
 docker-compose.yml
 
-## Быстрый старт
+## Run with Docker
 
-1. Клонировать репозиторий
+1. clone repo
 
 git clone https://github.com/ArturM-r/API.git
 cd API
 
-2. Создать .env
+2. create .env
 
 POSTGRES_USER=kobazaz
 POSTGRES_PASSWORD=123456
-POSTGRES_DB=hardtodo
+POSTGRES_DB=apis
 
-DATABASE_URL=postgres://kobazaz:123456@postgres:5432/hardtodo?sslmode=disable
+DATABASE_URL=postgres://example:123456@postgres:5432/apis?sslmode=disable
 REDIS_URL=redis://redis:6379
 HMAC_KEY=supersecretkey
 
-3. Запуск через Docker
+3. run
 
 docker compose up --build
 
-Сервис будет доступен на:
+API будет доступен на:
 http://localhost:8080
 
 ## API
 
-Регистрация  
-POST /user/register
+Auth:
 
-{
-  "email": "test@example.com",
-  "password": "123456"
-}
+POST /user/register  
+POST /user/login  
 
-Логин  
-POST /user/login
+Protected routes (JWT required):
 
-{
-  "user": {...},
-  "token": "JWT_TOKEN"
-}
+GET    /api  
+GET    /api/:id  
+POST   /api  
+PATCH  /api/:id  
+DELETE /api/:id  
 
-Авторизация  
+Authorization header:
+
 Authorization: Bearer <token>
 
-Получить все записи  
-GET /api
+## Example requests
 
-Query:
-- limit
-- offset
-- completed
-- title
+Create:
 
-Получить по ID  
-GET /api/:id
-
-Создать  
 POST /api
 
 {
   "title": "task"
 }
 
-Обновить  
+Update:
+
 PATCH /api/:id
 
 {
@@ -102,5 +95,22 @@ PATCH /api/:id
   "completed": true
 }
 
-Удалить  
-DELETE /api/:id
+## Architecture
+
+Проект построен по классической схеме:
+
+- handler — работа с HTTP (Gin)
+- service — бизнес-логика
+- repository — работа с БД
+
+Это позволяет:
+- легко тестировать код
+- разделять ответственность
+- менять инфраструктуру без переписывания логики
+
+## Notes
+
+- PostgreSQL используется как основная БД
+- Redis используется как кэш (GET /api)
+- кэш инвалидируется при create/update/delete
+- используется offset/limit пагинация

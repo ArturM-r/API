@@ -32,7 +32,7 @@ RETURNING id, email, password_hash, created_at`
 		&u.ID, &u.Email, &u.PasswordHash, &u.CreatedAt,
 	)
 	if err != nil {
-		return nil, errs.ErrNotFound
+		return nil, fmt.Errorf("error inserting user: %w", err)
 	}
 	return &u, nil
 }

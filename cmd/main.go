@@ -16,6 +16,8 @@ func main() {
 	rd := config_conn.RedisConn()
 	db := config_conn.DbConn()
 
+	config_conn.RunMigrations(cfg.DatabaseUrl)
+
 	userRepo := user.NewRepository(db)
 	userService := user.NewService(userRepo, cfg.HMACKey)
 	userHandler := user.NewHandler(userService)
@@ -42,7 +44,7 @@ func main() {
 		apiGroup.DELETE("/:id", apiHandler.Delete)
 	}
 
-	if err := router.Run("0.0.0.0:8080"); err != nil {
+	if err := router.Run(":8080"); err != nil {
 		log.Fatal(err)
 	}
 }

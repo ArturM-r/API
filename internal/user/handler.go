@@ -30,6 +30,7 @@ func (h *Handler) Register(c *gin.Context) {
 	response, err := h.service.Registration(c.Request.Context(), user.Email, user.Password)
 	if err != nil {
 		c.JSON(401, gin.H{"error": err.Error()})
+		return
 	}
 	c.JSON(200, response)
 }
